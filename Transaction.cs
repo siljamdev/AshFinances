@@ -1,0 +1,1 @@
+public record Transaction(float number, string? category, string? description);
