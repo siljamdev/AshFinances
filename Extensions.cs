@@ -16,4 +16,8 @@ static class Extensions{
 	public static int Max(params int[] i){
 		return i.Max();
 	}
+	
+	public static bool isConsoleInteractive(){
+		return Environment.UserInteractive && !Console.IsInputRedirected && !Console.IsOutputRedirected;
+	}
 }

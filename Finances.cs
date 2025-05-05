@@ -4,16 +4,26 @@ using AshLib.Folders;
 using AshLib.AshFiles;
 
 static class Finances{
-	public static Dependencies dep = null!;
+	static Dependencies dep = null!;
 	
-	public static Dictionary<DateOnly, Day> days = null!;
+	static Dictionary<DateOnly, Day> days = null!;
 	
 	public static AshFile config = null!;
 	static AshFile daysFile = null!;
 	
 	public const string version = "1.0.0";
 	
-	public static void Main(){
+	public static int Main(string[] args){
+		if(args.Length > 0){
+			return CommandLineHandler.handle(args);
+		}
+		
+		if(!Extensions.isConsoleInteractive()){
+			Console.Error.WriteLine("This application needs an interactive console to be run.");
+			Console.Error.WriteLine("Use -h for CLI help.");
+			return 1;
+		}
+		
 		initialize();
 		
 		load(findLatest());
@@ -22,21 +32,24 @@ static class Finances{
 		
 		if(days.Count == 0){
 			Screens.doFirstOpen();
-			save();
 		}
 		
 		updateCurrentBalance();
 		
 		Screens.mainScreen();
+		
+		return 0;
 	}
 	
 	static void initialize(){
 		string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-		dep = new Dependencies(appDataPath + "/ashproject/ashfinances", false, null, null);
+		dep = new Dependencies(appDataPath + "/ashproject/ashfinances", true, null, null);
 		config = dep.config;
 		
 		days = new Dictionary<DateOnly, Day>();
 		daysFile = dep.ReadAshFile("days.ash");
+		
+		Palette.initialize();
 	}
 	
 	static DateOnly? findLatest(){
@@ -148,6 +161,16 @@ static class Finances{
 		}
 	}
 	
+	public static void addFirstBalance(float i, string? c, string? d){
+		if(i == 0){
+			Finances.days[Extensions.Today] = new Day(0, new List<Transaction>());
+		}else{
+			Finances.days[Extensions.Today] = new Day(0, new List<Transaction>{new Transaction(i, c, d)});
+		}
+		
+		save();
+	}
+	
 	public static void addTransactionToday(float n, string c, string d){
 		c = c.Trim();
 		d = d.Trim();
@@ -162,7 +185,7 @@ static class Finances{
 		}else if(days.ContainsKey(latest)){
 			days[today] = new Day(days[latest].end, new List<Transaction>{t});
 		}else{
-			Screens.doFirstOpen();
+			days[today] = new Day(0);
 			days[today].addTransaction(t);
 		}
 		save();
