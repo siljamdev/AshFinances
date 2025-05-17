@@ -24,4 +24,9 @@ class Day{
 		transactions.Add(t);
 		update();
 	}
+	
+	public void deleteTransaction(Transaction t){
+		transactions.Remove(t);
+		update();
+	}
 }

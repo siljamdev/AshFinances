@@ -18,10 +18,7 @@ There are no pre built executables for linux or mac but it should be compatible,
 It also has a minimal CLI for adding transactions. You can do `ashfinances -h` to get a complete help menu.
 
 ## Config
-The config is an ashfile found at `%appdata%/ashproject/ashfinances/config.ash`. Go there to customize colors or stop coloring altogether
-
-## NO_COLOR
-This application supports the NO_COLOR environment variable. See more information about this initiative [here](https://no-color.org/).
+The config is an ashfile found at `%appdata%/ashproject/ashfinances/config.ash`. You can change it with the in-app menu.
 
 ## License
 This software is licensed under the [MIT License](https://github.com/siljamdev/AshFinances/blob/main/LICENSE).

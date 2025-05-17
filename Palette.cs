@@ -1,16 +1,17 @@
 using AshLib;
 using AshLib.AshFiles;
+using AshLib.Formatting;
 using AshConsoleGraphics;
 
 static class Palette{
-	public static Color3? User {get; private set;}
-	public static Color3? Static {get; private set;}
-	public static Color3? Number {get; private set;}
-	public static Color3? Continue {get; private set;}
-	public static Color3? Error {get; private set;}
-	public static Color3? Profit {get; private set;}
-	public static Color3? Loss {get; private set;}
-	public static Color3? Ash {get; private set;}
+	public static CharFormat? User {get; private set;}
+	public static CharFormat? Static {get; private set;}
+	public static CharFormat? Number {get; private set;}
+	public static CharFormat? Continue {get; private set;}
+	public static CharFormat? Error {get; private set;}
+	public static CharFormat? Profit {get; private set;}
+	public static CharFormat? Loss {get; private set;}
+	public static CharFormat? Ash {get; private set;}
 	
 	public static void initialize(){
 		AshFileModel m = new AshFileModel(
@@ -27,25 +28,22 @@ static class Palette{
 		
 		Finances.config *= m;
 		
-		if(isNoColorDefined() || (Finances.config.CanGetCamp("useColors", out bool b) && !b)){
-			//AshConsoleGraphics.Buffer.NoColor = true; //Its broken :(
+		if((!FormatString.usesColors) || (Finances.config.CanGetCamp("useColors", out bool b) && !b)){
+			AshConsoleGraphics.Buffer.NoFormat = true; //Its (no longer) broken :)
 			return;
 		}
 		
-		User = Finances.config.GetCamp<Color3>("palette.user");
-		Static = Finances.config.GetCamp<Color3>("palette.static");
-		Number = Finances.config.GetCamp<Color3>("palette.number");
-		Continue = Finances.config.GetCamp<Color3>("palette.continue");
-		Error = Finances.config.GetCamp<Color3>("palette.error");
-		Profit = Finances.config.GetCamp<Color3>("palette.profit");
-		Loss = Finances.config.GetCamp<Color3>("palette.loss");
-		Ash = Finances.config.GetCamp<Color3>("palette.ash");
+		AshConsoleGraphics.Buffer.NoFormat = false;
+		
+		User = new CharFormat(Finances.config.GetCamp<Color3>("palette.user"));
+		Static = new CharFormat(Finances.config.GetCamp<Color3>("palette.static"));
+		Number = new CharFormat(Finances.config.GetCamp<Color3>("palette.number"));
+		Continue = new CharFormat(Finances.config.GetCamp<Color3>("palette.continue"));
+		Error = new CharFormat(Finances.config.GetCamp<Color3>("palette.error"));
+		Profit = new CharFormat(Finances.config.GetCamp<Color3>("palette.profit"));
+		Loss = new CharFormat(Finances.config.GetCamp<Color3>("palette.loss"));
+		Ash = new CharFormat(Finances.config.GetCamp<Color3>("palette.ash"));
 		
 		Finances.config.Save();
-	}
-	
-	static bool isNoColorDefined(){
-		string noColor = Environment.GetEnvironmentVariable("NO_COLOR");
-		return !string.IsNullOrEmpty(noColor);
 	}
 }

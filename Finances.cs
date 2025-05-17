@@ -11,7 +11,7 @@ static class Finances{
 	public static AshFile config = null!;
 	static AshFile daysFile = null!;
 	
-	public const string version = "1.1.0";
+	public const string version = "1.2.0";
 	
 	public static int Main(string[] args){
 		if(args.Length > 0){
@@ -31,7 +31,9 @@ static class Finances{
 		Console.Clear();
 		
 		if(days.Count == 0){
-			Screens.doFirstOpen();
+			if(Screens.doFirstOpen()){
+				return 0;
+			}
 		}
 		
 		updateCurrentBalance();
@@ -147,6 +149,35 @@ static class Finances{
 		return daysl.Where(k => days.ContainsKey(k)).Select(k => days[k]).ToArray();
 	}
 	
+	public static KeyValuePair<DateOnly, Day>[] requestDaysWithDate(DateOnly start, int num){
+		DateOnly end = start.AddDays(num);
+		List<DateOnly> daysl = new List<DateOnly>();
+		
+		daysl.Add(start);
+		
+		DateOnly? dn = findAfter(start);
+		while(dn is not null && dn! < end){
+			DateOnly d = (DateOnly) dn;
+			daysl.Add(d);
+			dn = findAfter(d);
+		}
+		
+		foreach(DateOnly dt in daysl){
+			load(dt);
+		}
+		
+		if(daysl.Count == 1 && !days.ContainsKey(start)){
+			DateOnly? prev = findPrevious(start);
+			load(prev);
+			if(prev is null || !days.ContainsKey((DateOnly) prev)){
+				return new KeyValuePair<DateOnly, Day>[]{new KeyValuePair<DateOnly, Day>(start, new Day(0))};
+			}
+			return new KeyValuePair<DateOnly, Day>[]{new KeyValuePair<DateOnly, Day>(start, new Day(days[(DateOnly) prev].end))};
+		}
+		
+		return daysl.Where(k => days.ContainsKey(k)).Select(k => new KeyValuePair<DateOnly, Day>(k, days[k])).ToArray();
+	}
+	
 	static void updateForward(DateOnly d){
 		load(d);
 		DateOnly? dn = findAfter(d);
@@ -214,20 +245,46 @@ static class Finances{
 		save();
 	}
 	
+	public static void deleteTransaction(DateOnly dn, Transaction t){
+		load(dn);
+		
+		if(days.ContainsKey(dn)){
+			days[dn].deleteTransaction(t);
+		}
+		updateForward(dn);
+		save();
+	}
+	
 	static void updateCurrentBalance(){
 		DateOnly latest = findLatest() ?? Extensions.Today;
 		
 		if(days.ContainsKey(latest)){
 			Screens.updateCurrentBalance(days[latest].end);
+		}else{
+			Screens.updateCurrentBalance(0f);
 		}
 	}
 	
 	static void save(){
 		foreach(var kvp in days){
+			string n = kvp.Key.ToStringDate();
+			
+			List<string> toDel = new();
+			
+			foreach(var c in daysFile){
+				string[] div = c.Key.Split(".");
+				if(div.Length > 0 && div[0] == n){
+					toDel.Add(c.Key);
+				}
+			}
+			
+			foreach(string d in toDel){
+				daysFile.DeleteCamp(d);
+			}
+			
 			if(kvp.Value.transactions.Count == 0){
 				continue;
 			}
-			string n = kvp.Key.ToStringDate();
 			
 			daysFile.SetCamp(n + ".s", kvp.Value.start);
 			
