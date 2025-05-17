@@ -11,7 +11,7 @@ static class Finances{
 	public static AshFile config = null!;
 	static AshFile daysFile = null!;
 	
-	public const string version = "1.2.0";
+	public const string version = "1.1.0";
 	
 	public static int Main(string[] args){
 		if(args.Length > 0){
