@@ -26,6 +26,8 @@ static class Palette{
 			new ModelInstance(ModelInstanceOperation.Type, "useColors", true)
 		);
 		
+		m.deleteNotMentioned = true;
+		
 		Finances.config *= m;
 		
 		if((!FormatString.usesColors) || (Finances.config.CanGetCamp("useColors", out bool b) && !b)){

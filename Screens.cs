@@ -176,7 +176,7 @@ static class Screens{
 						}
 					}else{
 						att.Stop();
-						Finances.addTransaction(d, i, ((TuiWritable) att.Elements[11]).Text, ((TuiWritable) att.Elements[12]).Text);
+						Finances.addTransaction(d, i, ((TuiWritable) att.Elements[10]).Text, ((TuiWritable) att.Elements[11]).Text);
 					}
 				}else{
 					((TuiFramedTextBox) att.Elements[7]).TextFormat = Palette.Error;
@@ -614,16 +614,16 @@ static class Screens{
 	
 	static void openUrl(string url){
 		try{
-			if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)){
+			if(OperatingSystem.IsWindows()){
 				Process.Start(new ProcessStartInfo{
 					FileName = url,
 					UseShellExecute = true
 				});
 			}
-			else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux)){
+			else if(OperatingSystem.IsLinux()){
 				Process.Start("xdg-open", url);
 			}
-			else if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)){
+			else if(OperatingSystem.IsMacOS()){
 				Process.Start("open", url);
 			}
 		}
