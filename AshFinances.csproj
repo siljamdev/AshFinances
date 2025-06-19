@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <Authors>siljam</Authors>
     <Company>AshProject</Company>
     <PackageDescription>Application to keep track of money</PackageDescription>
@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ashConsoleGraphics" Version="2.1.0" />
+    <PackageReference Include="ashConsoleGraphics" Version="2.1.1" />
   </ItemGroup>
   
 </Project>

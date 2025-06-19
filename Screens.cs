@@ -40,6 +40,8 @@ static class Screens{
 			b = true;
 		});
 		
+		dfo.WaitForKey = true;
+		
 		dfo.AutoResize = true;
 		
 		dfo.OnResize = s => Console.CursorVisible = false;
@@ -63,6 +65,8 @@ static class Screens{
 			new TuiLabel("AshFinances", Placement.Center, 0, -8, Palette.Ash),
 			currentBalance);
 		
+		main.WaitForKey = true;
+		
 		main.AutoResize = true;
 		main.OnResize = s => Console.CursorVisible = false;
 		
@@ -83,6 +87,8 @@ static class Screens{
 			new TuiLabel("Description:", Placement.Center, -18, 3),
 			currentBalance
 		);
+		
+		att.WaitForKey = true;
 		
 		att.AutoResize = true;
 		att.OnResize = s => Console.CursorVisible = false;
@@ -147,6 +153,8 @@ static class Screens{
 			new TuiLabel("Description:", Placement.Center, -18, 3),
 			currentBalance
 		);
+		
+		att.WaitForKey = true;
 		
 		att.AutoResize = true;
 		att.OnResize = s => Console.CursorVisible = false;
@@ -322,7 +330,7 @@ static class Screens{
 			}
 		}
 		
-		update();
+		see.WaitForKey = true;
 		
 		see.AutoResize = true;
 		see.OnResize = s => {
@@ -331,6 +339,8 @@ static class Screens{
 			separator2.Xsize = see.Xsize;
 			update();
 		};
+		
+		update();
 		
 		Console.CursorVisible = false;
 		see.Play();
@@ -490,7 +500,7 @@ static class Screens{
 			}
 		}
 		
-		update();
+		see.WaitForKey = true;
 		
 		see.AutoResize = true;
 		see.OnResize = s => {
@@ -498,6 +508,8 @@ static class Screens{
 			separator.Xsize = see.Xsize;
 			update();
 		};
+		
+		update();
 		
 		Console.CursorVisible = false;
 		see.Play();
@@ -513,6 +525,8 @@ static class Screens{
 			new TuiLabel("Made by Siljam", Placement.Center, 0, 0),
 			new TuiLabel("This software is licensed under the MIT License.", Placement.Center, 0, 2)
 			);
+		
+		dfo.WaitForKey = true;
 		
 		dfo.AutoResize = true;
 		
@@ -559,6 +573,8 @@ static class Screens{
 			
 			errorLabel //11
 			);
+		
+		dfo.WaitForKey = true;
 		
 		dfo.AutoResize = true;
 		
