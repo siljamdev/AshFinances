@@ -11,7 +11,7 @@ static class Finances{
 	public static AshFile config = null!;
 	static AshFile daysFile = null!;
 	
-	public const string version = "1.2.1";
+	public const string version = "1.2.2";
 	
 	public static int Main(string[] args){
 		if(args.Length > 0){
@@ -56,7 +56,7 @@ static class Finances{
 	
 	static DateOnly? findLatest(){
 		DateOnly? l = null;
-		foreach(var kvp in daysFile.data){
+		foreach(var kvp in daysFile){
 			string[] p = kvp.Key.Split(".");
 			if(p.Length == 2 && p[1] == "s" && p[0].TryParseDate(out DateOnly d) && (l is null || d > l)){
 				l = d;
@@ -68,7 +68,7 @@ static class Finances{
 	static DateOnly? findPrevious(DateOnly dn){
 		DateOnly? l = null;
 		DateOnly today = Extensions.Today;
-		foreach(var kvp in daysFile.data){
+		foreach(var kvp in daysFile){
 			string[] p = kvp.Key.Split(".");
 			if(p.Length == 2 && p[1] == "s" && p[0].TryParseDate(out DateOnly d) && ((l is null && d < dn) || (d < dn && d > l))){
 				l = d;
@@ -82,7 +82,7 @@ static class Finances{
 	
 	static DateOnly? findAfter(DateOnly dn){
 		DateOnly? l = null;
-		foreach(var kvp in daysFile.data){
+		foreach(var kvp in daysFile){
 			string[] p = kvp.Key.Split(".");
 			if(p.Length == 2 && p[1] == "s" && p[0].TryParseDate(out DateOnly d) && ((l is null && d > dn) || (d > dn && d < l))){
 				l = d;
@@ -102,17 +102,17 @@ static class Finances{
 		DateOnly d = (DateOnly) dn;
 		
 		string n = d.ToStringDate();
-		if(!daysFile.CanGetCamp(n + ".s", out float s)){
+		if(!daysFile.TryGetValue(n + ".s", out float s)){
 			return;
 		}
 		
 		List<Transaction> tl = new();
 		
 		int t = 0;
-		while(daysFile.CanGetCamp(n + "." + t, out float tv)){
+		while(daysFile.TryGetValue(n + "." + t, out float tv)){
 			tl.Add(new Transaction(tv,
-				daysFile.GetCampOrDefault<string?>(n + "." + t + ".c", null),
-				daysFile.GetCampOrDefault<string?>(n + "." + t + ".d", null)));
+				daysFile.GetOrDefault<string?>(n + "." + t + ".c", null),
+				daysFile.GetOrDefault<string?>(n + "." + t + ".d", null)));
 			
 			t++;
 		}
@@ -279,24 +279,24 @@ static class Finances{
 			}
 			
 			foreach(string d in toDel){
-				daysFile.DeleteCamp(d);
+				daysFile.Remove(d);
 			}
 			
 			if(kvp.Value.transactions.Count == 0){
 				continue;
 			}
 			
-			daysFile.SetCamp(n + ".s", kvp.Value.start);
+			daysFile.Set(n + ".s", kvp.Value.start);
 			
 			for(int i = 0; i < kvp.Value.transactions.Count; i++){
-				daysFile.SetCamp(n + "." + i, kvp.Value.transactions[i].number);
+				daysFile.Set(n + "." + i, kvp.Value.transactions[i].number);
 				
 				if(kvp.Value.transactions[i].category is not null){
-					daysFile.SetCamp(n + "." + i + ".c", kvp.Value.transactions[i].category!);
+					daysFile.Set(n + "." + i + ".c", kvp.Value.transactions[i].category!);
 				}
 				
 				if(kvp.Value.transactions[i].description is not null){
-					daysFile.SetCamp(n + "." + i + ".d", kvp.Value.transactions[i].description!);
+					daysFile.Set(n + "." + i + ".d", kvp.Value.transactions[i].description!);
 				}
 			}
 		}

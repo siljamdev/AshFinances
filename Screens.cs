@@ -9,7 +9,17 @@ static class Screens{
 	static TuiTwoLabels currentBalanceClone = new TuiTwoLabels("Current balance: ", "0", Placement.TopLeft, 2, 1, null, Palette.Static);
 	
 	public static bool doFirstOpen(){
-		TuiFramedTextBoxFloat box = new TuiFramedTextBoxFloat("", 16, Placement.Center, 0, 0, null, null, null, Palette.User, Palette.User);
+		TuiFramedTextBox box = new TuiFramedTextBox("", 16, Placement.Center, 0, 0, null, null, null, Palette.User, Palette.User);
+		
+		box.CanWriteChar = c => {
+			if(box.Text.Length + 1 > box.Length){
+				return null;
+			}
+			if(char.IsDigit(c) || c == '-' || c == '.'){
+				return c.ToString();
+			}
+			return null;
+		};
 		
 		TuiScreenInteractive dfo = null!;
 		
@@ -44,7 +54,7 @@ static class Screens{
 		
 		dfo.AutoResize = true;
 		
-		dfo.OnResize = s => Console.CursorVisible = false;
+		dfo.OnResize += (s, a) => Console.CursorVisible = false;
 		
 		Console.CursorVisible = false;
 		dfo.Play();
@@ -68,18 +78,37 @@ static class Screens{
 		main.WaitForKey = true;
 		
 		main.AutoResize = true;
-		main.OnResize = s => Console.CursorVisible = false;
+		main.OnResize += (s, a) => Console.CursorVisible = false;
 		
 		Console.CursorVisible = false;
 		main.Play();
 	}
 	
 	public static void addTransactionTodayScreen(){
+		
+		TuiFramedTextBox num = new TuiFramedTextBox("", 16, Placement.Center, 0, -3, null, null, null, Palette.User, Palette.User);
+		
+		TuiFramedTextBox cat = new TuiFramedTextBox("", 16, Placement.Center, 0, 0, null, null, null, Palette.User, Palette.User);
+		
+		TuiFramedScrollingTextBox desc = new TuiFramedScrollingTextBox("", 512, 16, Placement.Center, 0, 3, null, null, null, Palette.User, Palette.User);
+		
+		TuiButton done = new TuiButton("Done", Placement.Center, 0, 6, null, Palette.Continue, Palette.User);
+		
+		num.CanWriteChar = c => {
+			if(num.Text.Length + 1 > num.Length){
+				return null;
+			}
+			if(char.IsDigit(c) || c == '-' || c == '.'){
+				return c.ToString();
+			}
+			return null;
+		};
+		
 		TuiScreenInteractive att = new TuiScreenInteractive(20, 100, new TuiSelectable[,]{
-				{new TuiFramedTextBoxFloat("", 16, Placement.Center, 0, -3, null, null, null, Palette.User, Palette.User)},
-				{new TuiFramedTextBox("", 16, Placement.Center, 0, 0, null, null, null, Palette.User, Palette.User)},
-				{new TuiFramedScrollingTextBox("", 512, 16, Placement.Center, 0, 3, null, null, null, Palette.User, Palette.User)},
-				{new TuiButton("Done", Placement.Center, 0, 6, null, Palette.Continue, Palette.User)}
+				{num},
+				{cat},
+				{desc},
+				{done}
 			}, 0, 0, null,
 			new TuiLabel("Add transaction today", Placement.Center, 0, -8, Palette.Ash),
 			new TuiLabel("Value:", Placement.Center, -15, -3),
@@ -91,13 +120,13 @@ static class Screens{
 		att.WaitForKey = true;
 		
 		att.AutoResize = true;
-		att.OnResize = s => Console.CursorVisible = false;
+		att.OnResize += (s, a) => Console.CursorVisible = false;
 		
-		((TuiButton) att.Elements[8]).SetAction((s, cki) => {
-			if(float.TryParse(((TuiWritable) att.Elements[5]).Text, out float i)){
+		done.SetAction((s, cki) => {
+			if(float.TryParse(num.Text, out float i)){
 				if(i == 0){
-					((TuiFramedTextBox) att.Elements[5]).TextFormat = Palette.Error;
-					((TuiFramedTextBox) att.Elements[5]).SelectedTextFormat = Palette.Error;
+					num.TextFormat = Palette.Error;
+					num.SelectedTextFormat = Palette.Error;
 					if(att.Elements.Count < 10){
 						att.Elements.Add(new TuiLabel("Transaction cant be 0. Try again", Placement.Center, 0, 9, Palette.Error));
 					}else{
@@ -105,11 +134,11 @@ static class Screens{
 					}
 				}else{
 					att.Stop();
-					Finances.addTransactionToday(i, ((TuiWritable) att.Elements[6]).Text, ((TuiWritable) att.Elements[7]).Text);
+					Finances.addTransactionToday(i, cat.Text, desc.Text);
 				}
 			}else{
-				((TuiFramedTextBox) att.Elements[5]).TextFormat = Palette.Error;
-				((TuiFramedTextBox) att.Elements[5]).SelectedTextFormat = Palette.Error;
+				num.TextFormat = Palette.Error;
+				num.SelectedTextFormat = Palette.Error;
 				if(att.Elements.Count < 10){
 					att.Elements.Add(new TuiLabel("Invalid number. Try again", Placement.Center, 0, 9, Palette.Error));
 				}else{
@@ -123,28 +152,60 @@ static class Screens{
 	}
 	
 	public static void addTransactionPastScreen(){
+		
+		TuiFramedScrollingTextBox date = new TuiFramedScrollingTextBox(Extensions.Today.AddDays(-1).ToStringDate(), 10, 16, Placement.Center, 0, -6, null, null, null, Palette.User, Palette.User);
+		
+		TuiFramedTextBox num = new TuiFramedTextBox("", 16, Placement.Center, 0, -3, null, null, null, Palette.User, Palette.User);
+		
+		TuiFramedTextBox cat = new TuiFramedTextBox("", 16, Placement.Center, 0, 0, null, null, null, Palette.User, Palette.User);
+		
+		TuiFramedScrollingTextBox desc = new TuiFramedScrollingTextBox("", 512, 16, Placement.Center, 0, 3, null, null, null, Palette.User, Palette.User);
+		
+		date.CanWriteChar = c => {
+			if(date.Text.Length + 1 > date.Length){
+				return null;
+			}
+			if(char.IsDigit(c) || c == '/'){
+				return c.ToString();
+			}
+			return null;
+		};
+		
+		num.CanWriteChar = c => {
+			if(num.Text.Length + 1 > num.Length){
+				return null;
+			}
+			if(char.IsDigit(c) || c == '-' || c == '.'){
+				return c.ToString();
+			}
+			return null;
+		};
+		
+		TuiButton done = new TuiButton("Done", Placement.Center, 0, 6, null, Palette.Continue, Palette.User);
+		
 		TuiScreenInteractive att = null!;
+		
 		att = new TuiScreenInteractive(20, 100, new TuiSelectable[,]{
 				{	new TuiButton("-", Placement.Center, -12, -6, null, Palette.User).SetAction((s, cki) => {
-						if(((TuiWritable) att.Elements[7]).Text.TryParseDate(out DateOnly d)){
+						if(date.Text.TryParseDate(out DateOnly d)){
 							d = d.AddDays(-1);
-							((TuiWritable) att.Elements[7]).Text = d.ToStringDate();
+							date.Text = d.ToStringDate();
 						}
 					}),
-					new TuiFramedScrollingTextBoxDate(Extensions.Today.AddDays(-1).ToStringDate(), 16, Placement.Center, 0, -6, null, null, null, Palette.User, Palette.User),
+					date,
 					new TuiButton("+", Placement.Center, 11, -6, null, Palette.User).SetAction((s, cki) => {
-						if(((TuiWritable) att.Elements[7]).Text.TryParseDate(out DateOnly d)){
+						if(date.Text.TryParseDate(out DateOnly d)){
 							if(d >= Extensions.Today.AddDays(-1)){
 								return;
 							}
 							d = d.AddDays(1);
-							((TuiWritable) att.Elements[7]).Text = d.ToStringDate();
+							date.Text = d.ToStringDate();
 						}
 					})},
-				{null, new TuiFramedTextBoxFloat("", 16, Placement.Center, 0, -3, null, null, null, Palette.User, Palette.User), null},
-				{null, new TuiFramedTextBox("", 16, Placement.Center, 0, 0, null, null, null, Palette.User, Palette.User), null},
-				{null, new TuiFramedScrollingTextBox("", 512, 16, Placement.Center, 0, 3, null, null, null, Palette.User, Palette.User), null},
-				{null, new TuiButton("Done", Placement.Center, 0, 6, null, Palette.Continue, Palette.User), null}
+				{num, num, num},
+				{cat, cat, cat},
+				{desc, desc, desc},
+				{desc, done, desc}
 			}, 1, 1, null,
 			new TuiLabel("Add transaction in the past", Placement.Center, 0, -8, Palette.Ash),
 			new TuiLabel("Date (dd/mm/yyyy):", Placement.Center, -26, -6),
@@ -157,26 +218,26 @@ static class Screens{
 		att.WaitForKey = true;
 		
 		att.AutoResize = true;
-		att.OnResize = s => Console.CursorVisible = false;
+		att.OnResize += (s, a) => Console.CursorVisible = false;
 		
-		((TuiButton) att.Elements[12]).SetAction((s, cki) => {
-			if(float.TryParse(((TuiWritable) att.Elements[9]).Text, out float i)){
+		done.SetAction((s, cki) => {
+			if(float.TryParse(num.Text, out float i)){
 				if(i == 0){
-					((TuiFramedTextBox) att.Elements[7]).TextFormat = null;
-					((TuiFramedTextBox) att.Elements[7]).SelectedTextFormat = Palette.User;
-					((TuiFramedTextBox) att.Elements[9]).TextFormat = Palette.Error;
-					((TuiFramedTextBox) att.Elements[9]).SelectedTextFormat = Palette.Error;
+					date.TextFormat = null;
+					date.SelectedTextFormat = Palette.User;
+					num.TextFormat = Palette.Error;
+					num.SelectedTextFormat = Palette.Error;
 					if(att.Elements.Count < 14){
 						att.Elements.Add(new TuiLabel("Transaction cant be 0. Try again", Placement.Center, 0, 9, Palette.Error));
 					}else{
 						((TuiLabel)att.Elements[13]).Text = "Transaction cant be 0. Try again";
 					}
-				}else if(((TuiWritable) att.Elements[7]).Text.TryParseDate(out DateOnly d)){
+				}else if(date.Text.TryParseDate(out DateOnly d)){
 					if(d > Extensions.Today){
-						((TuiFramedTextBox) att.Elements[7]).TextFormat = Palette.Error;
-						((TuiFramedTextBox) att.Elements[7]).SelectedTextFormat = Palette.Error;
-						((TuiFramedTextBox) att.Elements[9]).TextFormat = null;
-						((TuiFramedTextBox) att.Elements[9]).SelectedTextFormat = Palette.User;
+						date.TextFormat = Palette.Error;
+						date.SelectedTextFormat = Palette.Error;
+						num.TextFormat = null;
+						num.SelectedTextFormat = Palette.User;
 						if(att.Elements.Count < 14){
 							att.Elements.Add(new TuiLabel("Date cant be future! Try again", Placement.Center, 0, 9, Palette.Error));
 						}else{
@@ -184,13 +245,13 @@ static class Screens{
 						}
 					}else{
 						att.Stop();
-						Finances.addTransaction(d, i, ((TuiWritable) att.Elements[10]).Text, ((TuiWritable) att.Elements[11]).Text);
+						Finances.addTransaction(d, i, cat.Text, desc.Text);
 					}
 				}else{
-					((TuiFramedTextBox) att.Elements[7]).TextFormat = Palette.Error;
-					((TuiFramedTextBox) att.Elements[7]).SelectedTextFormat = Palette.Error;
-					((TuiFramedTextBox) att.Elements[9]).TextFormat = null;
-					((TuiFramedTextBox) att.Elements[9]).SelectedTextFormat = Palette.User;
+					date.TextFormat = Palette.Error;
+					date.SelectedTextFormat = Palette.Error;
+					num.TextFormat = null;
+					num.SelectedTextFormat = Palette.User;
 					if(att.Elements.Count < 14){
 						att.Elements.Add(new TuiLabel("Invalid date. Try again", Placement.Center, 0, 9, Palette.Error));
 					}else{
@@ -198,10 +259,10 @@ static class Screens{
 					}
 				}
 			}else{
-				((TuiFramedTextBox) att.Elements[7]).TextFormat = null;
-				((TuiFramedTextBox) att.Elements[7]).SelectedTextFormat = Palette.User;
-				((TuiFramedTextBox) att.Elements[9]).TextFormat = Palette.Error;
-				((TuiFramedTextBox) att.Elements[9]).SelectedTextFormat = Palette.Error;
+				date.TextFormat = null;
+				date.SelectedTextFormat = Palette.User;
+				num.TextFormat = Palette.Error;
+				num.SelectedTextFormat = Palette.Error;
 				if(att.Elements.Count < 14){
 					att.Elements.Add(new TuiLabel("Invalid number. Try again", Placement.Center, 0, 9, Palette.Error));
 				}else{
@@ -220,11 +281,21 @@ static class Screens{
 		DateOnly startDate = Extensions.Today;
 		int numberOfDays = 1;
 		
-		TuiFramedScrollingTextBoxDate inputDate = new TuiFramedScrollingTextBoxDate("", 16, Placement.TopCenter, 0, 4, null, null, null, Palette.User, Palette.User);
+		TuiFramedScrollingTextBox inputDate = new TuiFramedScrollingTextBox("", 10, 16, Placement.TopCenter, 0, 4, null, null, null, Palette.User, Palette.User);
 		TuiLabel inputDateError = new TuiLabel("", Placement.TopCenter, 0, 3, Palette.Error);
 		
 		TuiLabel fromDate = new TuiLabel("", Placement.TopRight, 2, 4, Palette.Static);
 		TuiLabel toDate = new TuiLabel("", Placement.TopRight, 2, 5, Palette.Static);
+		
+		inputDate.CanWriteChar = c => {
+			if(inputDate.Text.Length + 1 > inputDate.Length){
+				return null;
+			}
+			if(char.IsDigit(c) || c == '/'){
+				return c.ToString();
+			}
+			return null;
+		};
 		
 		inputDate.SubKeyEvent(ConsoleKey.Enter, (s, cki) => {
 			if(inputDate.Text.TryParseDate(out DateOnly d)){
@@ -333,7 +404,7 @@ static class Screens{
 		see.WaitForKey = true;
 		
 		see.AutoResize = true;
-		see.OnResize = s => {
+		see.OnResize += (s, a) => {
 			Console.CursorVisible = false;
 			separator.Xsize = see.Xsize;
 			separator2.Xsize = see.Xsize;
@@ -354,13 +425,13 @@ static class Screens{
 		
 		KeyValuePair<DateOnly, Transaction>[] transactions = null;
 		
-		TuiFramedScrollingTextBoxDate inputDate = new TuiFramedScrollingTextBoxDate("", 16, Placement.TopCenter, 0, 4, null, null, null, Palette.User, Palette.User);
+		TuiFramedScrollingTextBox inputDate = new TuiFramedScrollingTextBox("", 10, 16, Placement.TopCenter, 0, 4, null, null, null, Palette.User, Palette.User);
 		TuiLabel inputDateError = new TuiLabel("", Placement.TopCenter, 0, 3, Palette.Error);
 		
 		TuiButton datePlus = new TuiButton("+", Placement.TopCenter, 0, 7, null, Palette.User);
 		TuiButton dateMinus = new TuiButton("-", Placement.TopCenter, 0, 10, null, Palette.User);
 		
-		TuiFramedTextBoxUInt inputDelete = new TuiFramedTextBoxUInt("", 16, Placement.TopCenter, 0, 5, null, null, null, Palette.Number, Palette.User);
+		TuiFramedTextBox inputDelete = new TuiFramedTextBox("", 16, Placement.TopCenter, 0, 5, null, null, null, Palette.Number, Palette.User);
 		TuiLabel inputDeleteError = new TuiLabel("", Placement.TopCenter, 0, 4, Palette.Error);
 		TuiLabel deleteLabel = new TuiLabel("Enter transaction number to delete:", Placement.TopCenter, 0, 3);
 		
@@ -369,6 +440,26 @@ static class Screens{
 		
 		datePlus.SetAction((s, ski) => {startDate = startDate.AddDays(numberOfDays); update();});
 		dateMinus.SetAction((s, ski) => {startDate = startDate.AddDays(-numberOfDays); update();});
+		
+		inputDelete.CanWriteChar = c => {
+			if(inputDelete.Text.Length + 1 > inputDelete.Length){
+				return null;
+			}
+			if(char.IsDigit(c)){
+				return c.ToString();
+			}
+			return null;
+		};
+		
+		inputDate.CanWriteChar = c => {
+			if(inputDate.Text.Length + 1 > inputDate.Length){
+				return null;
+			}
+			if(char.IsDigit(c) || c == '/'){
+				return c.ToString();
+			}
+			return null;
+		};
 		
 		inputDate.SubKeyEvent(ConsoleKey.Enter, (s, cki) => {
 			if(inputDate.Text.TryParseDate(out DateOnly d)){
@@ -503,7 +594,7 @@ static class Screens{
 		see.WaitForKey = true;
 		
 		see.AutoResize = true;
-		see.OnResize = s => {
+		see.OnResize += (s, a) => {
 			Console.CursorVisible = false;
 			separator.Xsize = see.Xsize;
 			update();
@@ -530,14 +621,14 @@ static class Screens{
 		
 		dfo.AutoResize = true;
 		
-		dfo.OnResize = s => Console.CursorVisible = false;
+		dfo.OnResize += (s, a) => Console.CursorVisible = false;
 		
 		Console.CursorVisible = false;
 		dfo.Play();
 	}
 	
 	public static void configScreen(){
-		TuiFramedCheckBox useCols = new TuiFramedCheckBox(' ', 'X', Finances.config.GetCamp<bool>("useColors"), Placement.Center, 4, -6, null, null, null, Palette.User, Palette.User);
+		TuiFramedCheckBox useCols = new TuiFramedCheckBox(' ', 'X', Finances.config.GetValue<bool>("useColors"), Placement.Center, 4, -6, null, null, null, Palette.User, Palette.User);
 		
 		TuiButton done = new TuiButton("Done", Placement.Center, 0, 10, null, Palette.Continue, Palette.User);
 		
@@ -547,17 +638,17 @@ static class Screens{
 			new TuiSelectable[,]{
 				{useCols, useCols},
 				
-				{new TuiFramedScrollingTextBoxColor3(Palette.User.foreground.ToString(), 8, Placement.Center, -15, -1, null, null, Palette.User, Palette.User, Palette.User),
-				new TuiFramedScrollingTextBoxColor3(Palette.Error.foreground.ToString(), 8, Placement.Center, 15, -1, null, null, Palette.Error, Palette.Error, Palette.User)},
+				{setColor3(new TuiFramedScrollingTextBox(Palette.User.foreground.ToString(), 7, 8, Placement.Center, -15, -1, null, null, Palette.User, Palette.User, Palette.User)),
+				setColor3(new TuiFramedScrollingTextBox(Palette.Error.foreground.ToString(), 7, 8, Placement.Center, 15, -1, null, null, Palette.Error, Palette.Error, Palette.User))},
 				
-				{new TuiFramedScrollingTextBoxColor3(Palette.Static.foreground.ToString(), 8, Placement.Center, -15, 2, null, null, Palette.Static, Palette.Static, Palette.User),
-				new TuiFramedScrollingTextBoxColor3(Palette.Profit.foreground.ToString(), 8, Placement.Center, 15, 2, null, null, Palette.Profit, Palette.Profit, Palette.User)},
+				{setColor3(new TuiFramedScrollingTextBox(Palette.Static.foreground.ToString(), 7, 8, Placement.Center, -15, 2, null, null, Palette.Static, Palette.Static, Palette.User)),
+				setColor3(new TuiFramedScrollingTextBox(Palette.Profit.foreground.ToString(), 7, 8, Placement.Center, 15, 2, null, null, Palette.Profit, Palette.Profit, Palette.User))},
 				
-				{new TuiFramedScrollingTextBoxColor3(Palette.Number.foreground.ToString(), 8, Placement.Center, -15, 5, null, null, Palette.Number, Palette.Number, Palette.User),
-				new TuiFramedScrollingTextBoxColor3(Palette.Loss.foreground.ToString(), 8, Placement.Center, 15, 5, null, null, Palette.Loss, Palette.Loss, Palette.User)},
+				{setColor3(new TuiFramedScrollingTextBox(Palette.Number.foreground.ToString(), 7, 8, Placement.Center, -15, 5, null, null, Palette.Number, Palette.Number, Palette.User)),
+				setColor3(new TuiFramedScrollingTextBox(Palette.Loss.foreground.ToString(), 7, 8, Placement.Center, 15, 5, null, null, Palette.Loss, Palette.Loss, Palette.User))},
 				
-				{new TuiFramedScrollingTextBoxColor3(Palette.Continue.foreground.ToString(), 8, Placement.Center, -15, 8, null, null, Palette.Continue, Palette.Continue, Palette.User),
-				new TuiFramedScrollingTextBoxColor3(Palette.Ash.foreground.ToString(), 8, Placement.Center, 15, 8, null, null, Palette.Ash, Palette.Ash, Palette.User)},
+				{setColor3(new TuiFramedScrollingTextBox(Palette.Continue.foreground.ToString(), 7, 8, Placement.Center, -15, 8, null, null, Palette.Continue, Palette.Continue, Palette.User)),
+				setColor3(new TuiFramedScrollingTextBox(Palette.Ash.foreground.ToString(), 7, 8, Placement.Center, 15, 8, null, null, Palette.Ash, Palette.Ash, Palette.User))},
 				
 				{done, done}
 			},
@@ -578,7 +669,7 @@ static class Screens{
 		
 		dfo.AutoResize = true;
 		
-		dfo.OnResize = s => Console.CursorVisible = false;
+		dfo.OnResize += (s, a) => Console.CursorVisible = false;
 		
 		done.SetAction((s, cki) => {
 			if(!Color3.TryParse(((TuiWritable) dfo.Elements[13]).Text, out Color3 user)){
@@ -608,16 +699,16 @@ static class Screens{
 			
 			errorLabel.Text = "";
 			
-			Finances.config.SetCamp("useColors", useCols.Checked);
+			Finances.config.Set("useColors", useCols.Checked);
 			
-			Finances.config.SetCamp("palette.user", user);
-			Finances.config.SetCamp("palette.error", error);
-			Finances.config.SetCamp("palette.static", stat);
-			Finances.config.SetCamp("palette.profit", profit);
-			Finances.config.SetCamp("palette.number", number);
-			Finances.config.SetCamp("palette.loss", loss);
-			Finances.config.SetCamp("palette.continue", contin);
-			Finances.config.SetCamp("palette.ash", ash);
+			Finances.config.Set("palette.user", user);
+			Finances.config.Set("palette.error", error);
+			Finances.config.Set("palette.static", stat);
+			Finances.config.Set("palette.profit", profit);
+			Finances.config.Set("palette.number", number);
+			Finances.config.Set("palette.loss", loss);
+			Finances.config.Set("palette.continue", contin);
+			Finances.config.Set("palette.ash", ash);
 			
 			Finances.config.Save();
 			
@@ -666,5 +757,19 @@ static class Screens{
 		}else{
 			currentBalance.RightFormat = currentBalanceClone.RightFormat = Palette.Static;
 		}
+	}
+	
+	static TuiFramedScrollingTextBox setColor3(TuiFramedScrollingTextBox b){
+		b.CanWriteChar = c => {
+			if(b.Text.Length + 1 > b.Length){
+				return null;
+			}
+			if(Uri.IsHexDigit(c) || c == '#'){
+				return c.ToString();
+			}
+			return null;
+		};
+		
+		return b;
 	}
 }

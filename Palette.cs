@@ -30,21 +30,21 @@ static class Palette{
 		
 		Finances.config *= m;
 		
-		if((!FormatString.usesColors) || (Finances.config.CanGetCamp("useColors", out bool b) && !b)){
+		if((!FormatString.usesColors) || (Finances.config.TryGetValue("useColors", out bool b) && !b)){
 			AshConsoleGraphics.Buffer.NoFormat = true; //Its (no longer) broken :)
 			return;
 		}
 		
 		AshConsoleGraphics.Buffer.NoFormat = false;
 		
-		User = new CharFormat(Finances.config.GetCamp<Color3>("palette.user"));
-		Static = new CharFormat(Finances.config.GetCamp<Color3>("palette.static"));
-		Number = new CharFormat(Finances.config.GetCamp<Color3>("palette.number"));
-		Continue = new CharFormat(Finances.config.GetCamp<Color3>("palette.continue"));
-		Error = new CharFormat(Finances.config.GetCamp<Color3>("palette.error"));
-		Profit = new CharFormat(Finances.config.GetCamp<Color3>("palette.profit"));
-		Loss = new CharFormat(Finances.config.GetCamp<Color3>("palette.loss"));
-		Ash = new CharFormat(Finances.config.GetCamp<Color3>("palette.ash"));
+		User = new CharFormat(Finances.config.GetValue<Color3>("palette.user"));
+		Static = new CharFormat(Finances.config.GetValue<Color3>("palette.static"));
+		Number = new CharFormat(Finances.config.GetValue<Color3>("palette.number"));
+		Continue = new CharFormat(Finances.config.GetValue<Color3>("palette.continue"));
+		Error = new CharFormat(Finances.config.GetValue<Color3>("palette.error"));
+		Profit = new CharFormat(Finances.config.GetValue<Color3>("palette.profit"));
+		Loss = new CharFormat(Finances.config.GetValue<Color3>("palette.loss"));
+		Ash = new CharFormat(Finances.config.GetValue<Color3>("palette.ash"));
 		
 		Finances.config.Save();
 	}
